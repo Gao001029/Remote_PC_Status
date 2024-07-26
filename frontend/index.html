@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status Dashboard</title>
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/body.css">
+    <link rel="stylesheet" href="css/footer.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header1280">
+            <div class="header-content">
+                <div class="logo-header"></div>
+                <h1 class="h1Title">Remote PC Status</h1>
+            </div>
+        </div>
+
+        <h2>Test Bench</h2>
+        <table id="testBenchTable">
+            <h6>Tips:Unavailable-服务器故障、None-不存在、Available-无用户登录、Local connnection-用户登录服务器但未建立实时远程连接、Remote connection-用户正在建立实时远程连接</h6>
+            <thead>
+                <tr>
+                    <th>NO.</th>
+                    <th>REMOTE PC</th>
+                    <th>USERS INFO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Status rows will be filled here by JavaScript -->
+            </tbody>
+        </table>
+        <h2>Build Machine</h2>
+        <h4>Resource Usage</h4>
+        <table id="resourceUsageTable">
+            <thead>
+                <tr>
+                    <th>NO.</th>
+                    <th>REMOTE PC</th>
+                    <th>CPU</th>
+                    <th>RAM</th>
+                    <th>Root</th>
+                    <th>DATA 1</th>
+                    <th>DATA 2</th>
+                    <th>DATA 3</th>
+                    <th>DATA 4</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Status rows will be filled here by JavaScript -->
+            </tbody>
+        </table>
+        <h4>Docker Usage</h4>
+        <table id="dockerUsageTable">
+            <thead>
+                <tr>
+                    <th>NO.</th>
+                    <th>REMOTE PC</th>
+                    <th>Docker ID</th>
+                    <th>Docker Image</th>
+                    <th>Docker Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Status rows will be filled here by JavaScript -->
+            </tbody>
+        </table>
+        <div class="footer">
+            <div class="footer-content">
+                <div class="contact-section">
+                    <div class="icon-container">
+                        <span role="img" aria-label="customer-service" class="anticon anticon-customer-service">
+                            <svg viewBox="64 64 896 896" focusable="false" data-icon="customer-service" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                                <path d="M512 128c-212.1 0-384 171.9-384 384v360c0 13.3 10.7 24 24 24h184c35.3 0 64-28.7 64-64V624c0-35.3-28.7-64-64-64H200v-48c0-172.3 139.7-312 312-312s312 139.7 312 312v48H688c-35.3 0-64 28.7-64 64v208c0 35.3 28.7 64 64 64h184c13.3 0 24-10.7 24-24V512c0-212.1-171.9-384-384-384zM328 632v192H200V632h128zm496 192H696V632h128v192z"></path>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="contact-info">
+                        <span role="img" aria-label="mail" class="anticon anticon-mail">
+                            <svg viewBox="64 64 896 896" focusable="false" data-icon="mail" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                                <path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 110.8V792H136V270.8l-27.6-21.5 39.3-50.5 42.8 33.3h643.1l42.8-33.3 39.3 50.5-27.7 21.5zM833.6 232L512 482 190.4 232l-42.8-33.3-39.3 50.5 27.6 21.5 341.6 265.6a55.99 55.99 0 0068.7 0L888 270.8l27.6-21.5-39.3-50.5-42.7 33.2z"></path>
+                            </svg>
+                        </span>
+                        Contact Us via : shouruo.qing@continental-corporation.com
+                    </div>
+                </div>
+                <div class="produced-section">
+                    <div>Produced by A SCT RM SW SHA SWP1</div>
+                    <div class="cssdc_logo"></div>
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+    <script src="js/script.js"></script>
+</body>
+
+</html>
