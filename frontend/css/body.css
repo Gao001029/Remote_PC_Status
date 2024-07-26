@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+.unavailable-row {
+    background-color: rgb(216, 31, 7) !important; /* 整行标红 */
+}
+.unavailable-cell {
+    text-align: center !important; /* 单元格内居中显示 */
+}
+
+
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f4;
+    color: #333333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+h2, h4 {
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+h2 {
+    color: #FFA500;
+}
+
+h4 {
+    color: #FFA500;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+table th, table td {
+    padding: 12px 15px;
+    border: 1px solid #ffffff;
+    text-align: left;
+    font-size: 16px;
+}
+
+table th {
+    background: #FFA500;
+    color: #333333;
+    text-transform: uppercase;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #e2dfdf;
+}
+
+table tbody tr:hover {
+    background-color: #FFA500;
+    color: #000000;
+    cursor: pointer;
+}
+
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 30px;
+    font-size: 18px;
+    color: #333333;
+    background-color: #FFA500;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+
+button:hover {
+    background-color: #FFA500;
+}
