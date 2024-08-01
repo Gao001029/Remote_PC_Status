@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book PC</title>
+    <link rel="stylesheet" href="../css/header.css">
+    <link rel="stylesheet" href="../css/body.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <style>
+        .time-slot {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+        .time-slot span {
+            flex: 1;
+        }
+        .time-slot input, .time-slot button {
+            flex: 1;
+            margin-left: 10px;
+        }
+        .reserved {
+            color: red;
+        }
+        .available {
+            color: green;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #FFA500;
+        }
+        .book-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #333;
+            background-color: #fff;
+            border: 2px solid #FFA500;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .book-button:hover {
+            background-color: #FFA500;
+            color: #fff;
+        }
+
+        .book-button:active {
+            background-color: #ff7f00;
+            border-color: #ff7f00;
+            color: #fff;
+            transform: scale(0.95);
+        }
+
+        .book-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header1280">
+            <div class="header-content">
+                <div class="logo-header"></div>
+                <h1 class="h1Title">Book PC System - <span id="serverId"></span></h1>
+            </div>
+        </div>
+        <div id="schedule">
+            <!-- 时间段将在这里动态生成 -->
+        </div>
+        <div class="footer">
+            <div class="footer-content">
+                <div class="contact-section">
+                    <div class="icon-container">
+                        <span role="img" aria-label="customer-service" class="anticon anticon-customer-service">
+                            <svg viewBox="64 64 896 896" focusable="false" data-icon="customer-service" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                                <path d="M512 128c-212.1 0-384 171.9-384 384v360c0 13.3 10.7 24 24 24h184c35.3 0 64-28.7 64-64V624c0-35.3-28.7-64-64-64H200v-48c0-172.3 139.7-312 312-312s312 139.7 312 312v48H688c-35.3 0-64 28.7-64 64v208c0 35.3 28.7 64 64 64h184c13.3 0 24-10.7 24-24V512c0-212.1-171.9-384-384-384zM328 632v192H200V632h128zm496 192H696V632h128v192z"></path>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="contact-info">
+                        <span role="img" aria-label="mail" class="anticon anticon-mail">
+                            <svg viewBox="64 64 896 896" focusable="false" data-icon="mail" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                                <path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 110.8V792H136V270.8l-27.6-21.5 39.3-50.5 42.8 33.3h643.1l42.8-33.3 39.3 50.5-27.7 21.5zM833.6 232L512 482 190.4 232l-42.8-33.3-39.3 50.5 27.6 21.5 341.6 265.6a55.99 55.99 0 0068.7 0L888 270.8l27.6-21.5-39.3-50.5-42.7 33.2z"></path>
+                            </svg>
+                        </span>
+                        Contact Us via : shouruo.qing@continental-corporation.com
+                    </div>
+                </div>
+                <div class="produced-section">
+                    <div>Produced by A SCT RM SW SHA SWP1</div>
+                    <div class="cssdc_logo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const serverId = urlParams.get('server_id');
+        const apiBaseUrl = 'http://localhost:5000'; // 确保这里是Flask应用的地址
+
+        // 更新标题显示服务器名称
+        document.getElementById('serverId').textContent = serverId;
+
+        const scheduleDiv = document.getElementById('schedule');
+        for (let i = 0; i < 24; i++) {
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot';
+            timeSlot.innerHTML = `
+                <span>${i}:00 - ${i + 1}:00</span>
+                <span class="status available">未预约</span>
+                <span class="reserver"></span>
+                <input type="text" placeholder="输入姓名" class="name-input">
+                <button class="book-button" onclick="reserve(${i})">预约</button>
+            `;
+            scheduleDiv.appendChild(timeSlot);
+        }
+
+        async function reserve(hour) {
+            const timeSlot = scheduleDiv.children[hour];
+            const nameInput = timeSlot.querySelector('.name-input').value;
+            if (nameInput) {
+                const response = await fetch(`${apiBaseUrl}/appointments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ hour, name: nameInput, server_id: serverId })
+                });
+
+                if (response.ok) {
+                    timeSlot.querySelector('.status').innerText = '已预约';
+                    timeSlot.querySelector('.status').className = 'status reserved';
+                    timeSlot.querySelector('.reserver').innerText = nameInput;
+                    timeSlot.querySelector('.name-input').style.display = 'none';
+                    timeSlot.querySelector('button').style.display = 'none';
+                } else {
+                    alert('预约失败');
+                }
+            } else {
+                alert('请输入姓名');
+            }
+        }
+
+        async function loadAppointments() {
+            const response = await fetch(`${apiBaseUrl}/appointments?server_id=${serverId}`);
+            if (response.ok) {
+                const appointments = await response.json();
+
+                appointments.forEach(appt => {
+                    const timeSlot = scheduleDiv.children[appt.hour];
+                    timeSlot.querySelector('.status').innerText = '已预约';
+                    timeSlot.querySelector('.status').className = 'status reserved';
+                    timeSlot.querySelector('.reserver').innerText = appt.name;
+                    timeSlot.querySelector('.name-input').style.display = 'none';
+                    timeSlot.querySelector('button').style.display = 'none';
+                });
+            } else {
+                console.error('Failed to load appointments:', response.statusText);
+            }
+        }
+
+        loadAppointments();
+    </script>
+</body>
+</html>
