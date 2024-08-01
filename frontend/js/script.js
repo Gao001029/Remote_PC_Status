@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 定义fetchStatus函数，用于从服务器获取状态数据。
     function fetchStatus() {
         // 使用Fetch API向服务器的 /api/status 端点发出GET请求。
-        fetch('http://10.223.45.190:5000/api/status')
+        fetch('http://10.223.44.77:5000/api/status')
             // 当服务器响应时，将响应转换为JSON格式。
             .then(response => response.json())
             // 然后将数据传递给更新表格的函数。
@@ -48,6 +48,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.insertCell(1).textContent = key;
                     // 在新行的第三个单元格中插入用户信息，如果没有用户信息则显示'N/A'。
                     row.insertCell(2).textContent = info.users_info || 'N/A';
+
+                    const bookCell = row.insertCell(3);
+                    const bookButton = document.createElement('button');
+                    bookButton.textContent = '预约';
+                    bookButton.className = 'book-button';
+                    bookButton.onclick = () => {
+                        window.location.href = `../static/book.html?server_id=${key}`;
+                    };
+                    bookCell.appendChild(bookButton);
                 }
                 else{
                     // 插入新的一行。
@@ -57,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 在新行的第二个单元格中插入键。
                     row.insertCell(1).textContent = key;
                     // 在新行的第三个单元格中插入用户信息，如果没有用户信息则显示'N/A'。
-                    const cell = row.insertCell(2);
+                    const cell = row.insertCell(3);
                     cell.textContent = "Unavailable";
                     cell.classList.add('unavailable-cell'); // 添加居中显示的CSS类
                     row.classList.add('unavailable-row'); // 添加整行标红的CSS类
@@ -134,26 +143,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
                     // 插入第一行，显示序号和键值，并合并单元格
                     const row = tbody.insertRow();
-                    const cell1 = row.insertCell(0);
-                    cell1.rowSpan = dockerIds.length;
-                    cell1.textContent = number++;
-        
-                    const cell2 = row.insertCell(1);
-                    cell2.rowSpan = dockerIds.length;
-                    cell2.textContent = key;
-        
-                    // 在第一行中插入 Docker 信息
-                    row.insertCell(2).textContent = dockerIds[0];
-                    row.insertCell(3).textContent = dockerImages[0];
-                    row.insertCell(4).textContent = dockerStatuses[0];
+                    row.classList.add('highlight-row'); // 添加高亮样式
+                    row.insertCell(0).textContent = number++;
+                    row.insertCell(1).textContent = key;
+                    const cell = row.insertCell(2);
+                    cell.textContent = "Available"
+                    cell.classList.add('unavailable-cell'); // 添加居中显示的CSS类
+                    cell.colSpan = 3;
+
+                    
+
         
                     // 插入剩余的行，只显示 Docker 信息
                     // 因为新行是空的，所以插入索引 0、1、2 分别对应表格的第三列、第四列和第五列。
-                    for (let i = 1; i < dockerIds.length; i++) {
+                    for (let i = 0; i < dockerIds.length; i++) {
                         const dockerRow = tbody.insertRow();
-                        dockerRow.insertCell(0).textContent = dockerIds[i];
-                        dockerRow.insertCell(1).textContent = dockerImages[i];
-                        dockerRow.insertCell(2).textContent = dockerStatuses[i];
+                        dockerRow.insertCell(0).textContent = "";
+                        dockerRow.insertCell(1).textContent = "";
+                        dockerRow.insertCell(2).textContent = dockerIds[i];
+                        dockerRow.insertCell(3).textContent = dockerImages[i];
+                        dockerRow.insertCell(4).textContent = dockerStatuses[i];
                     }
                     
                 }
@@ -164,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.insertCell(0).textContent = number++;
                     // 在新行的第二个单元格中插入键。
                     row.insertCell(1).textContent = key;
-                    const cell = row.insertCell(2);
+                    cell = row.insertCell(2)
                     cell.textContent = "Unavailable";
                     cell.colSpan = 3; // 合并后面的7个单元格
                     cell.classList.add('unavailable-cell'); // 添加居中显示的CSS类
