@@ -6,8 +6,7 @@
 # 从flask中导入两个重要组件：Flask、jsonify
 # 通过实例化Flask类，可以创建一个应用实例，允许定义路由、处理请求
 # jsonify用于将数据结构转换成JSON格式响应
-
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, send_from_directory
 # 导入Flask的一个扩展：Flask-CORS
 # 他用于处理跨资源共享（CORS）问题
 # 通过使用Flask-CORS，确保前端应用能够安全地从Flask后端获取数据，无论他们部署在何处。
@@ -17,7 +16,9 @@ from flask_cors import CORS
 from flask_apscheduler import APScheduler
 # 将位于utils文件内的server_status_checker函数导入
 from utils.server_status_checker import update_server_statuses
-
+import MySQLdb
+from datetime import datetime
+import os
 
 # 定义一个名为Config的类
 class Config:
@@ -28,19 +29,24 @@ class Config:
     # 设置调度器的时区为UTC，UTC是一个参考国际参考时间，更多用于跨时区的服务器
     # 使得服务器物理位置无论在哪，任务调度时间都一致
     SCHEDULER_TIMEZONE = "UTC"  # Ensure you set the correct timezone for your needs
-
 # 创建一个Flask应用的实例
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/static', static_url_path='/static')
 # 加载配置，config就是加载Config启动的配置到app.config字典中，之后就可以通过app.config['CONFIG_NAME']访问这些配置
-app.config.from_object(Config())
 
+app.config.from_object(Config())
 # 在Flask应用中启用跨资源共享（CORS）：允许API接受来自不同源的请求
 # 项目中使用 CORS(app) 是为了确保前端应用可以无障碍地调用后端 API
 CORS(app)
 
-# 定义服务器列表
+# 数据库连接
+db = MySQLdb.connect(
+    host="localhost",
+    user="root",
+    passwd="root",
+    db="appointment_db"
+)
+
 servers = [
-    {'host': 'hostname', 'port': 22, 'username': 'usn', 'password': 'psw'},
     # 添加其他服务器
 ]
 
@@ -70,15 +76,49 @@ scheduler.add_job(id='Fetch Server Status', func=fetch_server_status, trigger='i
 # 当HTTP请求这个特定路由时，关联的视图函数（status）将被调用来处理请求并返回相应
 # 定当script.js中请求 http://10.214.153.34:5000/api/status 时，应该调用哪个函数（status）。
 #简单点说，这个路由紧随的函数，就是关联的函数，里面的参数，就规定了前端需要访问的路由地址（ip+这里定义的地址）
-@app.route('/api/status') 
+@app.route('/api/status')
 def status():
     # 直接返回最近一次更新的服务器状态，并转成JSON的格式返回
     # jsonify是Flask提供的一个辅助函数，用于将Python字典或者列表转换为JSON格式
     return jsonify(server_statuses)
+
+# 获取当前日期的预约信息
+@app.route('/appointments', methods=['GET'])
+def get_appointments():
+    server_id = request.args.get('server_id')
+    date = datetime.now().strftime('%Y-%m-%d')
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM appointments WHERE date = %s AND server_id = %s", (date, server_id))
+    results = cursor.fetchall()
+    appointments = [{"id": row[0], "date": row[1], "hour": row[2], "name": row[3], "server_id": row[4]} for row in results]
+    return jsonify(appointments)
+
+# 创建预约
+@app.route('/appointments', methods=['POST'])
+def create_appointment():
+    data = request.json
+    date = datetime.now().strftime('%Y-%m-%d')
+    hour = data['hour']
+    name = data['name']
+    server_id = data['server_id']
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO appointments (date, hour, name, server_id) VALUES (%s, %s, %s, %s)", (date, hour, name, server_id))
+    db.commit()
+    return jsonify({"success": True})
+
+# 提供前端页面
+@app.route('/')
+def serve_frontend():
+    return send_from_directory(app.static_folder, 'index.html')
+
+# 提供预约页面
+@app.route('/book.html')
+def serve_booking():
+    return send_from_directory(app.static_folder, 'book.html')
 
 if __name__ == '__main__':
     # app.run（）是Flask内置开发服务器的启动命令
     # debug=true,开启调试模式：在调试模式下，Flask 会在应用中显示详细的错误页面，并在代码更改时自动重载应用。
     # port=5000：设置服务器监听的端口号
     # host='0.0.0.0':接受所有公共 IP 地址的访问，这使得服务器可以从任何设备上通过网络访问。
-    app.run(debug=True, port=5000,host='0.0.0.0')
+    app.run(debug=True, port=5000, host='0.0.0.0')
