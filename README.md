@@ -1,16 +1,15 @@
 项目目录结构：
 
-  后端（Backend）
+  后端（Backend）  
   
     api
       __init__.py: 使api文件夹成为Python模块。
-      server_status_api.py: 可能用于获取服务器状态的API。
+      server_status_api.py: 可能用于获取服务器状态以及连接数据库的API。
     utils
       __init__.py: 使utils文件夹成为Python模块。
       server_status_checker.py: 可能用于检查服务器状态的工具。
-    main.py: 主程序入口。
-    
-  前端（Frontend）
+    main.py: 主程序入口。    
+  前端（Frontend）  
   
     css
       body.css: 页面主题样式设计。
@@ -18,7 +17,9 @@
       header.css：页面顶部样式设计。
     js
       script.js: JavaScript文件，用于处理前端的交互逻辑。
-    index.html: 主页面，用户的访问入口。
+    static
+      book.html:预约界面设计
+      index.html: 主页面，用户的访问入口。
     logo.svg:公司log，前端页面设计。
 
 Linux部署项目：
