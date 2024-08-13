@@ -1,124 +1,130 @@
-# flask是一个使用python编写的轻量级Web应用框架。
-# 本项目中Flask 用于设置 Web 服务器，管理 URL 路由，
-# 并处理 HTTP 请求和响应。通过定义路由和视图函数，
-# Flask 可以监听来自前端（如浏览器）的请求，并返回所请求的数据或页面。
-
-# 从flask中导入两个重要组件：Flask、jsonify
-# 通过实例化Flask类，可以创建一个应用实例，允许定义路由、处理请求
-# jsonify用于将数据结构转换成JSON格式响应
 from flask import Flask, jsonify, request, send_from_directory
-# 导入Flask的一个扩展：Flask-CORS
-# 他用于处理跨资源共享（CORS）问题
-# 通过使用Flask-CORS，确保前端应用能够安全地从Flask后端获取数据，无论他们部署在何处。
 from flask_cors import CORS
-# 导入Flask的另一个扩展：APScheduler。
-# 他用于在应用中安排和管理周期性任务，定时执行任务
 from flask_apscheduler import APScheduler
-# 将位于utils文件内的server_status_checker函数导入
-from utils.server_status_checker import update_server_statuses
-import MySQLdb
+from sqlalchemy import create_engine, text, exc
+from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
 import os
+from utils.server_status_checker import update_server_statuses  # 确保这个函数在 utils/server_status_checker.py 中定义
 
-# 定义一个名为Config的类
 class Config:
-    # 启动APScheduler的Web API，允许通过HTTP请求监控和管理调度器中的任务
-    # 这样就可以监控任务：通过API查询任务是否在运行、下一次运行时间
-    # 管理任务：动态地添加、修改或删除调度任务
     SCHEDULER_API_ENABLED = True
-    # 设置调度器的时区为UTC，UTC是一个参考国际参考时间，更多用于跨时区的服务器
-    # 使得服务器物理位置无论在哪，任务调度时间都一致
-    SCHEDULER_TIMEZONE = "UTC"  # Ensure you set the correct timezone for your needs
-# 创建一个Flask应用的实例
-app = Flask(__name__, static_folder='../frontend/static', static_url_path='/static')
-# 加载配置，config就是加载Config启动的配置到app.config字典中，之后就可以通过app.config['CONFIG_NAME']访问这些配置
+    SCHEDULER_TIMEZONE = "UTC"
 
+app = Flask(__name__, static_folder='../../frontend/static', static_url_path='/static')
 app.config.from_object(Config())
-# 在Flask应用中启用跨资源共享（CORS）：允许API接受来自不同源的请求
-# 项目中使用 CORS(app) 是为了确保前端应用可以无障碍地调用后端 API
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# 数据库连接
-db = MySQLdb.connect(
-    host="localhost",
-    user="root",
-    passwd="root",
-    db="appointment_db"
-)
+DATABASE_URI = 'mysql+pymysql://root:root@localhost/appointment_db'
+engine = create_engine(DATABASE_URI, pool_pre_ping=True, pool_size=10, max_overflow=20)
+Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+
+def get_db_session():
+    return Session()
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 servers = [
     # 添加其他服务器
 ]
-
-# 全局字典来存储服务器状态
 server_statuses = {}
-# 创建一个APScheduler的调度器实例
-scheduler = APScheduler()
-# 将APScheduler与Flask应用进行集成，这样就可以访问app.config读取配置，包括上面定义的启动API以及定义时区
-scheduler.init_app(app)
-# 启动调度器
-scheduler.start()
 
-# 获得服务器状态函数
 def fetch_server_status():
-    # 函数内想修改外部定义的变量，需要global一下
     global server_statuses
-    # 赋值服务器状态
-    server_statuses = update_server_statuses(servers)
-    # 状态更新后，打印到Terminal
+    server_statuses = update_server_statuses(servers)  # 确保这个函数的实现符合你的需求
     print("Updated server statuses")
 
-# 设置定时任务，每30秒更新一次服务器状态
-# id为任务指定的唯一标识符
-# trigger='interval'触发方式为间隔触发
 scheduler.add_job(id='Fetch Server Status', func=fetch_server_status, trigger='interval', seconds=15)
-# 定义一个路由，将一个URL路径映射到一个视图函数（status）
-# 当HTTP请求这个特定路由时，关联的视图函数（status）将被调用来处理请求并返回相应
-# 定当script.js中请求 http://10.214.153.34:5000/api/status 时，应该调用哪个函数（status）。
-#简单点说，这个路由紧随的函数，就是关联的函数，里面的参数，就规定了前端需要访问的路由地址（ip+这里定义的地址）
+
 @app.route('/api/status')
 def status():
-    # 直接返回最近一次更新的服务器状态，并转成JSON的格式返回
-    # jsonify是Flask提供的一个辅助函数，用于将Python字典或者列表转换为JSON格式
     return jsonify(server_statuses)
 
-# 获取当前日期的预约信息
 @app.route('/appointments', methods=['GET'])
 def get_appointments():
+    session = get_db_session()
     server_id = request.args.get('server_id')
-    date = datetime.now().strftime('%Y-%m-%d')
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM appointments WHERE date = %s AND server_id = %s", (date, server_id))
-    results = cursor.fetchall()
-    appointments = [{"id": row[0], "date": row[1], "hour": row[2], "name": row[3], "server_id": row[4]} for row in results]
-    return jsonify(appointments)
+    try:
+        # 检查查询条件，去掉 start_time 的过滤，确保不遗漏数据
+        result = session.execute(
+            text("SELECT * FROM appointments WHERE server_id = :server_id AND end_time>=NOW() ORDER BY start_time"),
+            {'server_id': server_id}
+        ).fetchall()
 
-# 创建预约
+        appointments = [{"id": row[0], "start_time": row[2], "end_time": row[3], "name": row[4], "server_id": row[1]} for row in result]
+        
+        # 调试输出，检查查询结果
+        # print(f"查询结果: {appointments}")
+
+        return jsonify(appointments)
+    except exc.SQLAlchemyError as e:
+        print(f"查询数据库失败: {e}")
+        return jsonify({"error": "查询数据库失败"}), 500
+    finally:
+        session.close()
+
+
 @app.route('/appointments', methods=['POST'])
 def create_appointment():
+    session = get_db_session()
     data = request.json
-    date = datetime.now().strftime('%Y-%m-%d')
-    hour = data['hour']
+    start_time = datetime.strptime(data['start_time'], '%Y-%m-%dT%H:%M')
+    end_time = datetime.strptime(data['end_time'], '%Y-%m-%dT%H:%M')
     name = data['name']
     server_id = data['server_id']
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO appointments (date, hour, name, server_id) VALUES (%s, %s, %s, %s)", (date, hour, name, server_id))
-    db.commit()
-    return jsonify({"success": True})
 
-# 提供前端页面
+    if start_time >= end_time:
+        return jsonify({"error": "预约开始时间不能晚于预约结束时间"}), 400
+
+    # 检查预约时间段是否与现有预约冲突
+    try:
+        conflict_result = session.execute(
+            text("SELECT * FROM appointments WHERE server_id = :server_id AND NOT (end_time <= :start_time OR start_time >= :end_time)"),
+            {'start_time': start_time, 'end_time': end_time, 'server_id': server_id}
+        ).fetchall()
+
+        if conflict_result:
+            return jsonify({"error": "预约时间冲突，请选择其他时间段"}), 409
+
+        session.execute(
+            text("INSERT INTO appointments (server_id, start_time, end_time, name) VALUES (:server_id, :start_time, :end_time, :name)"),
+            {'server_id': server_id, 'start_time': start_time, 'end_time': end_time, 'name': name}
+        )
+        session.commit()
+        return jsonify({"success": True})
+    except exc.SQLAlchemyError as e:
+        print(f"插入数据库失败: {e}")
+        session.rollback()
+        return jsonify({"error": "插入数据库失败"}), 500
+    finally:
+        session.close()
+
+@app.route('/appointments/<int:id>', methods=['DELETE'])
+def cancel_appointment(id):
+    session = get_db_session()
+    try:
+        session.execute(
+            text("DELETE FROM appointments WHERE id = :id"),
+            {'id': id}
+        )
+        session.commit()
+        return jsonify({"success": True})
+    except exc.SQLAlchemyError as e:
+        print(f"取消预约失败: {e}")
+        session.rollback()
+        return jsonify({"error": "取消预约失败"}), 500
+    finally:
+        session.close()
+
 @app.route('/')
 def serve_frontend():
     return send_from_directory(app.static_folder, 'index.html')
 
-# 提供预约页面
 @app.route('/book.html')
 def serve_booking():
     return send_from_directory(app.static_folder, 'book.html')
 
 if __name__ == '__main__':
-    # app.run（）是Flask内置开发服务器的启动命令
-    # debug=true,开启调试模式：在调试模式下，Flask 会在应用中显示详细的错误页面，并在代码更改时自动重载应用。
-    # port=5000：设置服务器监听的端口号
-    # host='0.0.0.0':接受所有公共 IP 地址的访问，这使得服务器可以从任何设备上通过网络访问。
     app.run(debug=True, port=5000, host='0.0.0.0')
