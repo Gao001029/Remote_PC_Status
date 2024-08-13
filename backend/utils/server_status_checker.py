@@ -4,6 +4,8 @@ import paramiko
 # threading用于多线程编程，多线程可以并行处理多个任务，有提升程序执行效率
 import threading
 import re
+import socket
+
 
 def parse_fsutil_output(output): 
     """处理Disk的格式返回百分数"""
@@ -16,13 +18,20 @@ def parse_fsutil_output(output):
     used_percentage = f"{used_percentage}%"
     return used_percentage
 
-def ssh_command(ssh, command):
-    """执行单个SSH命令并返回输出"""
-    stdin, stdout, stderr = ssh.exec_command(command)
-    if stdout:
-        return stdout.read().decode()
-    else:
-        return None
+def ssh_command(ssh, command, timeout=10):
+    """执行单个SSH命令并返回输出，支持超时处理。"""
+    try:
+        stdin, stdout, stderr = ssh.exec_command(command, timeout=timeout)
+        if stdout:
+            return stdout.read().decode()
+        else:
+            return "NULL"
+    except paramiko.SSHException as e:
+        print(f"SSH command failed: {e}")
+        return "SSH_ERROR"
+    except socket.timeout:
+        print("Command timed out")
+        return "TimeOut"
 # def get_status_linux(users_info):
 #     """处理linux得到的users_info格式问题并返回"""
 #     users = []
@@ -107,8 +116,6 @@ def get_logged_in_users(host, port, username, password, result_dict):
             data2 = ssh_command(ssh, "df -h | awk '$6 == \"/DATA2\" {print $5}'")
             data3 = ssh_command(ssh, "df -h | awk '$6 == \"/DATA3\" {print $5}'")
             data4 = ssh_command(ssh, "df -h | awk '$6 == \"/DATA4\" {print $5}'")
-            if data4 == "":
-                data4 = "None"
             result_dict[host] = {
                 'status':status, # 去除字符串开头和结尾的空白字符
                 'docker_id':docker_id.strip(),
