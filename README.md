@@ -10,17 +10,19 @@
       server_status_checker.py: 可能用于检查服务器状态的工具。
     main.py: 主程序入口。    
   前端（Frontend）  
-  
-    css
-      body.css: 页面主题样式设计。
-      footer.css：页面底部样式设计。
-      header.css：页面顶部样式设计。
-    js
-      script.js: JavaScript文件，用于处理前端的交互逻辑。
+
     static
+      css
+        book_body.css: 预约页面主题样式设计。
+        footer.css：页面底部样式设计。
+        header.css：页面顶部样式设计。
+        index_body.css:主页页面主题样式设计。
+        logo.svg:公司log，前端页面设计。
+      book_script.js: JavaScript文件，用于处理预约功能的前端交互逻辑。
+      index_script.js: JavaScript文件，用于处理主页功能的前端交互逻辑。
       book.html:预约界面设计
       index.html: 主页面，用户的访问入口。
-    logo.svg:公司log，前端页面设计。
+
 
 Linux部署项目：
 
