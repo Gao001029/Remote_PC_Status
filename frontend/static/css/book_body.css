@@ -1,0 +1,145 @@
+/* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f4;
+    color: #333333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+h1, h2, h4 {
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+h1 {
+    color: #FFA500;
+}
+
+/* Button Styles */
+.book-button, .cancel-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+    border: 2px solid #FFA500;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.book-button:hover, .cancel-button:hover {
+    background-color: #FFA500;
+    color: #fff;
+}
+
+.book-button:active, .cancel-button:active {
+    background-color: #ff7f00;
+    border-color: #ff7f00;
+    color: #fff;
+    transform: scale(0.95);
+}
+
+.book-button:focus, .cancel-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.5);
+}
+
+/* Form Layout */
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.time-input, .name-and-button {
+    display: flex;
+    justify-content: center;
+    width: 35%; /* 控制宽度为容器的70% */
+    margin-bottom: 10px;
+}
+
+.time-input label, .time-input input {
+    text-align: center; /* 设置文本向右对齐 */
+    margin-right: 1px; /* 增加右侧间距以清晰分隔标签和输入框 */
+    flex: 1;
+}
+
+
+.name-and-button {
+    width: 35%;
+    margin-right: 10px;
+}
+
+.name-input {
+    flex: 4; /* 输入框占据较大空间 */
+}
+
+.book-button {
+    flex: 3; /* 按钮相对较小 */
+}
+
+
+/* Appointment Styles */
+.time-slot, .appointment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.appointments-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.no-appointments {
+    text-align: center;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    font-size: 18px;
+    color: #888;
+}
+
+/* Table styles for appointments */
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.appointments-table th, .appointments-table td {
+    text-align: center; /* 单元格内容居中显示 */
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.appointments-table th {
+    background-color: #f4f4f4;
+}
